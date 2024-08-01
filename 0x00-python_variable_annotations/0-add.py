@@ -3,4 +3,5 @@
 
 
 def add(a: float, b: float) -> float:
+    """return float type result"""
     return (a + b)
