@@ -7,12 +7,10 @@ wait_random = __import__('0-basic_async_syntax').wait_random
 
 async def wait_n(n: int, max_delay: int) -> List[float]:
     """each call run concunrrently"""
-    arr: List[asyncio.Task]= []
-    result: List[float]= []
+    arr: List[asyncio.Task] = []
+    result: List[float] = []
     for i in range(0, n):
-        tk = asyncio.create_task(wait_random(max_delay))
-        arr.append(tk)
-    for i in asyncio.as_completed(arr):
-        got = await i
-        result.append(got)
+        arr.append(asyncio.create_task(wait_random(max_delay)))
+    for val in asyncio.as_completed(arr):
+        result.append(await val)
     return (result)
