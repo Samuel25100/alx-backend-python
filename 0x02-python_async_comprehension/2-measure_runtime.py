@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """measure_runtime async function"""
 import asyncio
+import typing
 from time import perf_counter
 async_comprehension = __import__('1-async_comprehension').async_comprehension
 
