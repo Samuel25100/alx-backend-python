@@ -26,6 +26,10 @@ class TestAccessNestedMap(unittest.TestCase):
         """check access_nested_map if raise keyerror correctly"""
         self.assertRaises(KeyError, access_nested_map, nest_map, path)
 
+    
+class TestGetJson(unittest.TestCase):
+    """utils file get requests test case"""
+
     @parameterized.expand([
         ("http://example.com", {"payload": True}),
         ("http://holberton.io", {"payload": False})
