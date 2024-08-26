@@ -3,6 +3,8 @@
 import unittest
 from unittest.mock import patch, PropertyMock
 from parameterized import parameterized
+from parameterized import parameterized_class
+from fixtures import TEST_PAYLOAD
 from client import GithubOrgClient
 from utils import (
     get_json,
@@ -58,6 +60,36 @@ class TestGithubOrgClient(unittest.TestCase):
         """test has_license"""
         val = GithubOrgClient.has_license(repo, license_k)
         self.assertEqual(val, result)
+
+
+@parameterized_class(('org_payload', 'repos_payload',
+                      'expected_repos', 'apache2_repos'),
+                     TEST_PAYLOAD)
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    """Integration test for client"""
+
+    @classmethod
+    def setUpClass(cls):
+        """setUp class for test"""
+        cls.mock_get = patch('requests.get')
+        cls.mock_get.start()
+
+        def sideEffect(url):
+            if url == "https://api.github.com/org_payload":
+                return json(cls.org_payload)
+            elif url == "https://api.github.com/repos_payload":
+                return json(cls.repos_payload)
+            elif url == "https://api.github.com/repos_payload":
+                return json(cls.expected_repos)
+            elif url == "https://api.github.com/apache2_repos":
+                return json(cls.apache2_repos)
+            return None
+        cls.mock_get.side_effect = sideEffect
+
+    @classmethod
+    def tearDownClass(cls):
+        """tear down setted up class"""
+        cls.mock_get.stop()
 
 
 if __name__ == "__main__":
