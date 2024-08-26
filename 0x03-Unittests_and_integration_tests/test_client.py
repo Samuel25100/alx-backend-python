@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """test case for client.GithubOrgClient"""
 import unittest
-from unittest.mock import patch, PropertyMock
+from unittest.mock import patch, PropertyMock, Mock
 from parameterized import parameterized
 from parameterized import parameterized_class
 from fixtures import TEST_PAYLOAD
@@ -71,20 +71,45 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """setUp class for test"""
-        cls.mock_get = patch('requests.get')
-        cls.mock_get.start()
+        cls.mock = patch('requests.get')
+        cls.mock_get = cls.mock.start()
 
         def sideEffect(url):
+            resp = Mock()
             if url == "https://api.github.com/org_payload":
-                return json(cls.org_payload)
+                resp.json.return_value = cls.org_payload.json()
+                return resp
+            elif url == "https://api.github.com/orgs/repos_payload":
+                resp.json.return_value = cls.repos_payload.json()
+                return resp
             elif url == "https://api.github.com/repos_payload":
-                return json(cls.repos_payload)
-            elif url == "https://api.github.com/repos_payload":
-                return json(cls.expected_repos)
+                resp.json.return_value = cls.expected_repos.json()
+                return resp
             elif url == "https://api.github.com/apache2_repos":
-                return json(cls.apache2_repos)
+                resp.json.return_value = cls.apache2_repos.json()
+                return resp
+            elif "https://api.github.com/orgs/" in url:
+                data = {}
+                data["repos_url"] = cls.repos_payload
+                resp.json.return_value = data
+                return resp
             return None
         cls.mock_get.side_effect = sideEffect
+
+    def test_public_repos(self):
+        """test public_repos in integration test"""
+        gitcl = GithubOrgClient("google")
+        val = gitcl.public_repos()
+        print("val:", val)
+        self.assertEqual(val[0], "cpp-netlib")
+        cls.mock_get.assert_called()
+
+    def test_public_repos_with_license(self):
+        """test public_repos with license"""
+        gitcl = GithubOrgClient("google")
+        val = gitcl.public_repos("apache-2.0")
+        self.assertEqual(val[0], "cpp-netlib")
+        cls.mock_get.assert_called()
 
     @classmethod
     def tearDownClass(cls):
